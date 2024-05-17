@@ -1,0 +1,90 @@
+{@java.util.List<java.lang.String> resultsXml}
+{@java.lang.String schemaXml}
+<div class="row">
+
+  <details class="">
+    <summary>
+      Transformed Schema (Avro)
+    </summary>
+    <div class="bg-secondary-subtle">
+      <pre class="p-3"><code id="transformedSchema">{converterUtil.getAvroSchemaJson(querier.peekTransformedResults.valueSchema, querier.peekTransformedResults.value)}</code></pre>
+    </div>
+  </details>
+
+  <hr />
+
+  <details class="">
+    <summary>
+      Transformed Schema (XSD)
+    </summary>
+    <div class="bg-secondary-subtle">
+      <pre class="p-3"><code id="transformedSchemaXml">{schemaXml}</code></pre>
+    </div>
+  </details>
+
+  <hr />
+
+  {#for record in querier.getTransformedResults()}
+  <details class="" {#if record_count is 1}open{/if}>
+    <summary class="">
+      Row #{record_count}
+    </summary>
+
+    <div class="row">
+      <div class="col col-2">
+        <label for="transformedRow{record_count}key">Key</label>
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" id="transformedRow{record_count}key" value="{record.key}" disabled readonly />
+      </div>
+    </div>
+
+    <details>
+      <summary>
+        Headers
+      </summary>
+      <div class="table-responsive m-3">
+        <table class="table table-sm">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Key</th>
+              <th scope="col">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#for header in record.headers}
+            <tr>
+              <td>{header.key}</td>
+              <td>{header.value}</td>
+            </tr>
+            {/for}
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <details open>
+      <summary>
+        Value (Avro/JSON)
+      </summary>
+      <div class="bg-secondary-subtle">
+        <pre class="p-3"><code id="transformedRow{record_count}">{converterUtil.getAvroValueJson(record.valueSchema, record.value)}</code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>
+        Value (XML)
+      </summary>
+      <div class="bg-secondary-subtle">
+        <pre class="p-3"><code id="transformedRowXml{record_count}">{resultsXml.get(record_index)}</code></pre>
+      </div>
+    </details>
+
+  </details>
+
+  <hr />
+
+  {/for}
+
+</div>

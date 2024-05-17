@@ -1,0 +1,226 @@
+<div class="row mb-3">
+<!-- TODO: Remove hard-coded values! -->
+  <div class="col">
+    <details open>
+      <summary>Standard Transformations</summary>
+      <div class="form-floating m-3">
+        <input form="configure" type="text" name="schemaMetadataName" id="schemaMetadataName" class="form-control" value="se.karolinska.schemas.karda.cytodos.AdministrationRCC" />
+        <label for="schemaMetadataName" class="form-label">Schema Name</label>
+        <div id="schemaMetadataNameHelp" class="form-text">Fully-qualified schema name to use for the generated Avro
+          schema. Example: <code>se.karolinska.schemas.karda.cytodos.AdministrationRCC</code></div>
+      </div>
+
+      <div class="form-floating m-3">
+        <input form="configure" type="text" name="keyField" id="keyField" class="form-control" value="EncounterId" />
+        <label for="keyField" class="form-label">Key Field</label>
+        <div id="keyFieldHelp" class="form-text">Field to be used as the Kafka message key. Messages with the same key
+          will be stored in the same partition and can be processed according to the order that they are produced.</div>
+      </div>
+
+      <div class="form-floating m-3">
+        <input form="configure" type="text" name="personnummerField" id="personnummerField" class="form-control" value="Personnummer" />
+        <label for="personnummerField" class="form-label">Personummer Field</label>
+        <div id="personnummerFieldHelp" class="form-text">Field which contains a Swedish Personnummer and will be
+          encrypted in the header <code>encrypted:http://electronichealth.se/identifier/personnummer</code></div>
+      </div>
+    </details>
+  </div>
+
+  <div class="col">
+    <details open>
+      <summary>
+        openEHR Feeder Audit Fields
+      </summary>
+
+      <div class="form-text">When the resulting message is created as an openEHR Composition, these are the values
+        which should be used to uniquely identify this row to support version control and prevention of creating
+        duplicate compositions from the same source data. <code>Note: The intention is to build a new custom
+        Transformation to help make this easier and more flexible.</code>
+      </div>
+
+      <div class="m-3">
+        <div class="form-label">originating.system.id Value</div>
+        <div class="input-group">
+          <input form="configure" type="text" name="originatingSystemId" id="originatingSystemId" class="form-control" value="cytodos" />
+        </div>
+        <div id="originatingSystemIdHelp" class="form-text">Hard-coded value to uniquely identify the original source
+          system of the row's data.</div>
+      </div>
+
+      <div class="m-3">
+        <div class="form-label">originating.system.identifiers Field</div>
+        <div class="input-group">
+          <input form="configure" type="text" name="originatingSystemIdentifiersField" id="originatingSystemIdentifiersField"
+            class="form-control" value="originating.system.identifiers" />
+          <div class="btn-group" role="group">
+            <input form="configure" type="radio" class="btn-check" name="originatingSystemIdentifiersFieldOperation" id="originatingSystemIdentifiersFieldOperationMove" value="move" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="originatingSystemIdentifiersFieldOperationMove">Move</label>
+
+            <input form="configure" type="radio" class="btn-check" name="originatingSystemIdentifiersFieldOperation" id="originatingSystemIdentifiersFieldOperationCopy" value="copy" autocomplete="off">
+            <label class="btn btn-outline-primary" for="originatingSystemIdentifiersFieldOperationCopy">Copy</label>
+          </div>
+        </div>
+        <div id="originatingSystemIdentifiersFieldHelp" class="form-text">Field which contains the primary key of the
+          source data <code>Note:you might need to create a virtual column in the query which concatenates multiple
+          primary keys into one field, as currently only a single field is supported for this.</code></div>
+      </div>
+
+      <div class="m-3">
+        <div class="form-label">originating.system.versionId Field</div>
+        <div class="input-group">
+          <input form="configure" type="text" name="originatingSystemVersionIdField" id="originatingSystemVersionIdField" class="form-control" value="SenastUppdaterad_orig" />
+          <div class="btn-group" role="group">
+            <input form="configure" type="radio" class="btn-check" name="originatingSystemVersionIdFieldOperation" id="originatingSystemVersionIdFieldOperationMove" value="move" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="originatingSystemVersionIdFieldOperationMove">Move</label>
+
+            <input form="configure" type="radio" class="btn-check" name="originatingSystemVersionIdFieldOperation" id="originatingSystemVersionIdFieldOperationCopy" value="copy" autocomplete="off">
+            <label class="btn btn-outline-primary" for="originatingSystemVersionIdFieldOperationCopy">Copy</label>
+          </div>
+        </div>
+        <div id="originatingSystemVersionIdFieldHelp" class="form-text">Field which will be used in a comparison sorting
+          algorithm in cases where an existing openEHR Composition is found with the same <code>originating.system.id</code>
+          and <code>originating.system.identifiers</code>. If the <code>originating.system.versionId</code> is found to be
+          "greater than" (<code>&gt;</code>) the latest Composition version's <code>originating.system.versionId</code>,
+          it will be considered a newer version.</div>
+      </div>
+
+      <div class="m-3">
+        <div class="form-label">originating.system.time Field</div>
+        <div class="input-group">
+          <input form="configure" type="text" name="originatingSystemVersionTimeField" id="originatingSystemVersionTimeField" class="form-control" value="SenastUppdaterad_orig" />
+          <div class="btn-group" role="group">
+            <input form="configure" type="radio" class="btn-check" name="originatingSystemVersionTimeFieldOperation" id="originatingSystemVersionTimeFieldOperationMove" value="move" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="originatingSystemVersionTimeFieldOperationMove">Move</label>
+
+            <input form="configure" type="radio" class="btn-check" name="originatingSystemVersionTimeFieldOperation" id="originatingSystemVersionTimeFieldOperationCopy" value="copy" autocomplete="off">
+            <label class="btn btn-outline-primary" for="originatingSystemVersionTimeFieldOperationCopy">Copy</label>
+          </div>
+        </div>
+        <div id="originatingSystemVersionTimeFieldHelp" class="form-text">Field which can be used to store a timestamp
+          field from the source data for help in troubleshooting and traceability.</div>
+      </div>
+
+    </details>
+  </div>
+
+</div>
+
+<details open>
+  <summary>
+    Additional Transformations
+  </summary>
+
+  <div id="transformationsContainer" class="container m-3">
+    <script>
+      //# sourceURL=querier/configure/connector
+      function resetTransformationConfigProperties(formId) {
+        document.querySelector('#' + formId +' div[role=transformationConfig]').innerHTML = '';
+        var className = document.querySelector('#' + formId +' select[name=className]');
+        var addButton = document.querySelector('#' + formId +' button[role=addTransformationConfig]');
+        if (className.options[className.selectedIndex].value == '') {
+          addButton.disabled = true;
+          addButton.classList.add('btn-outline-secondary');
+          addButton.classList.remove('btn-outline-success');
+        } else {
+          addButton.disabled = false;
+          addButton.classList.add('btn-outline-success');
+          addButton.classList.remove('btn-outline-secondary');
+          addButton.click();
+        }
+      }
+      function removeIfNewTransformation(existingDefinitionElem, transformationElem) {
+        if (existingDefinitionElem.value == '')
+          transformationElem.outerHTML = '';
+      }
+    </script>
+
+    <form name="transformationsDisplay" id="transformationsDisplay"></form>
+
+    <div class="row" id="transformationsHeader">
+      <div class="col-4">Transformation Class</div>
+      <div class="col-6">Configuration Properties</div>
+      <div class="col-2"></div>
+    </div>
+
+    <div class="row" id="transformationsFooter">
+      <hr />
+      <div class="col-1">
+        <button form="transformations" class="btn btn-sm btn-outline-success my-2 text-nowrap" type="button"
+          hx-get="/querier/configure/transformation/add"
+          hx-trigger="click"
+          hx-target="#transformationsFooter"
+          hx-swap="beforebegin"
+          >
+            + Add Transformation
+          </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    new Sortable(document.getElementById('transformationsContainer'), {
+      animation: 150,
+      ghostClass: 'bg-info-subtle',
+      draggable: '.draggable'
+    });
+  </script>
+
+<details open>
+  <summary>
+    Other Connector Settings
+  </summary>
+
+    <div class="row">
+
+      <div class="col">
+
+        <div class="form-floating m-3">
+          <input form="configure" type="text" name="pollIntervalMs" id="pollIntervalMs" class="form-control" />
+          <label for="pollIntervalMs" class="form-label">poll.interval.ms</label>
+          <div id="pollIntervalMsHelp" class="form-text">Frequency in millseconds to poll for new data using the query
+            (default <code>5000</code>).</code></div>
+        </div>
+
+        <div class="form-floating m-3">
+          <input form="configure" type="text" name="topicName" id="topicName" class="form-control" />
+          <label for="topicName" class="form-label">Topic Name</label>
+          <div id="topicNameHelp" class="form-text">The name of the topic to publish to.</code></div>
+        </div>
+
+      </div>
+
+      <div class="col">
+
+        <div class="form-floating m-3">
+          <input type="text" id="offsetsStorageTopic" class="form-control" value="{{topic.name}}-offsets" disabled readonly/>
+          <label for="offsetsStorageTopic" class="form-label">offsets.storage.topic</label>
+        </div>
+
+        <div class="form-floating m-3">
+          <input type="text" id="keyConverter" class="form-control" value="org.apache.kafka.connect.storage.StringConverter" disabled readonly/>
+          <label for="offsetsStorageTopic" class="form-label">key.converter</label>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div>
+    <hr />
+    <button form="configure" type="button" class="btn btn-primary m-2"
+      hx-post="/querier/results/connector"
+      hx-include="#configure"
+      hx-trigger="click"
+      hx-target="#connectorResults"
+      hx-swap="innerHTML"
+      hx-on::response-error="displayError(event, 'connectorResults')"
+      onclick="displayLoading('detailsConnectorResults', 'connectorResults')"
+    >
+        Preview Connector Results
+    </button>
+  </div>
+
+</details>

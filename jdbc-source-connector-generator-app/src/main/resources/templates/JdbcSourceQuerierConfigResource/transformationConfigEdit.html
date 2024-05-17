@@ -1,0 +1,10 @@
+<div class="input-group">
+  <select form="{uniqueFormName}" name="configName" class="form-select">
+    <option value=""></option>
+    {#for configKey in configKeys}
+    <option value="{configKey}" {#if selectedConfigKey.orEmpty eq configKey}selected{/if}>{configKey}</option>
+    {/for}
+  </select>
+  <input form="{uniqueFormName}" type="text" name="configValue" class="form-control" value="{configValue.or("")}" />
+  <button form="{uniqueFormName}" type="button" class="btn btn-outline-danger" onclick="remove(this.closest('div'))"><i class="bi-trash" alt="Remove Configration Property"></i></button>
+</div>

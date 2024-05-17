@@ -1,0 +1,43 @@
+{@java.lang.String querySchema}
+<div class="row">
+
+  <div class="col col-sm-6">
+    <details class="m-2" open>
+      <summary>
+        Query Schema
+      </summary>
+      <div class="p-3 bg-secondary-subtle">
+        <pre><code id="querySchema">{querySchema.or("").raw}</code></pre>
+      </div>
+    </details>
+  </div>
+
+  <div class="col col-sm-6">
+    {#for struct in querier.getQueryResultsAsStructs()}
+    <details class="m-2" id="detailsRow{struct_count}"{#if struct_count is 1} open{/if}>
+      <summary>
+        Row #{struct_count}
+      </summary>
+      <div class="table-responsive m-3">
+        <table class="table table-sm">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Field</th>
+              <th scope="col">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#for field in struct.schema().fields()}
+            <tr>
+              <th scope="row" classDISABLED="name-{field.schema().type()}">{field.name()}</th>
+              <td classDISABLED="value-{field.schema().type()}">{struct.get(field)}</td>
+            </tr>
+            {/for}
+          </tbody>
+        </table>
+      </div>
+    </details>
+    {/for}
+  </div>
+
+</div>

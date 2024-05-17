@@ -1,0 +1,225 @@
+<script>
+  //# sourceURL=querier/configure/query
+  function onChangeDatasource(value) {
+    var customDatasource = document.getElementById('customDatasource');
+    if (value == "")
+      show(customDatasource);
+    else
+      hide(customDatasource);
+  }
+  function onChangeMode(value) {
+    var timestampModeFields = document.getElementById('timestampModeFields');
+    var incrementingModeFields = document.getElementById('incrementingModeFields');
+    if (value == "TIMESTAMP") {
+      show(timestampModeFields);
+      hide(incrementingModeFields);
+    } else if (value == "INCREMENTING") {
+      hide(timestampModeFields);
+      show(incrementingModeFields);
+    } else {
+      show(timestampModeFields);
+      show(incrementingModeFields);
+    }
+  }
+  function addTimestampColumnName() {
+    document.getElementById('timestampColumnNamesWrapper').innerHTML += '<div class="input-group mb-3">' +
+      '<input form="configure" type="text" name="timestampColumnNames" class="form-control" />' +
+      '<button type="button" class="btn btn-outline-danger" onclick="remove(this.closest(\'div\'))">' +
+      '<i class="bi-trash" alt="Remove Timestamp Column"></i>' +
+      '</button>' +
+      '</div>';
+  }
+</script>
+<form id="configure">
+
+  <div class="row">
+
+    <div class="col">
+
+      <div class="form-floating mb-3">
+        <select form="configure" name="datasource" id="datasource" class="form-select" onchange="onChangeDatasource(this.options[this.selectedIndex].value)">
+          {#for datasource : datasources.entrySet()}
+          <option value="{datasource.getKey()}">{datasource.getValue().name}</option>
+          {/for}
+          <option value="">Custom...</option>
+        </select>
+        <label for="datasource" class="form-label">Datasource</label>
+      </div>
+      <div id="customDatasource" class="d-none">
+        <div class="form-floating mb-3">
+          <select form="configure" name="dialect" id="dialect" class="form-select">
+            {#for dialect : dialects}
+            <option value="{dialect}">{dialect}</option>
+            {/for}
+          </select>
+          <label for="dialect" class="form-label">Database Type</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input form="configure" type="text" name="jdbcUrl" id="jdbcUrl" class="form-control" />
+          <label for="jdbcUrl" class="form-label">JDBC URL</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input form="configure" type="text" name="username" id="username" class="form-control" />
+          <label for="username" class="form-label">Username</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input form="configure" type="password" name="password" id="password" class="form-control" />
+          <label for="password" class="form-label">Password</label>
+        </div>
+      </div>
+      <div class="mb-3">
+        <!-- TODO: remove hard-coded query? -->
+        <label for="query" class="form-label">Query</label>
+        <textarea name="query" id="query" class="form-control" rows="15">
+WITH
+latest_header AS
+(
+SELECT
+    EncounterId,
+    SenastUppdaterad,
+    CytodosAdminKey
+FROM
+    (SELECT
+        EncounterId,
+        SenastUppdaterad,
+        CytodosAdminKey,
+        FIRST_VALUE(CytodosAdminKey) OVER (PARTITION BY EncounterId ORDER BY SenastUppdaterad DESC, CytodosAdminKey DESC) AS LastUpdatedCytodosAdminKey
+    FROM
+        KardaMart.cytodos.Administration_RCC) AS header_with_latest
+WHERE
+    CytodosAdminKey = LastUpdatedCytodosAdminKey
+)
+SELECT * FROM (
+SELECT
+header.CytodosAdminKey AS [LatestCytodosAdminKey],
+CASE /* Fix for known problem where last 8 bytes of decrypted Pnr are NULL characters (0x00) and should be omitted from the value */
+    WHEN SUBSTRING(DECRYPTBYPASSPHRASE('Password1!', header.Pnr),
+            LEN(DECRYPTBYPASSPHRASE('Password1!', header.Pnr)) - 7,
+            8) = 0x00
+        THEN
+            CAST(SUBSTRING(DECRYPTBYPASSPHRASE('Password1!', header.Pnr),
+                0,
+                LEN(DECRYPTBYPASSPHRASE('Password1!', header.Pnr)) - 8)
+            AS NVARCHAR)
+    ELSE CAST(DECRYPTBYPASSPHRASE('Password1!', header.Pnr) AS NVARCHAR)
+    END AS [Personnummer],
+header.RekvisisjonId,
+header.EncounterId,
+CONVERT(VARCHAR(33), header.EncounterDate, 126) AS [EncounterDate],
+header.EncounterStatus,
+header.EncounterStatus_LongDescription,
+header.SignatureUser_FullName,
+header.SignatureUser_UserName,
+header.PDL_enhet_Namn,
+header.PDL_enhet_HSAID,
+header.Sparrgrupp,
+CONVERT(VARCHAR(33), header.Inskrivningstidpunkt, 126) AS [Inskrivningstidpunkt],
+CONVERT(VARCHAR(33), header.Utskrivningstidpunkt, 126) AS [Utskrivningstidpunkt],
+header.Diagnoskod_ICD10,
+header.Diagnosnamn_ICD10,
+header.Vardenhet_id,
+header.Vardenhet_namn,
+header.Vardenhet_HSAID,
+header.Slutenvard,
+header.SenastUppdaterad,
+CONVERT(VARCHAR(33), header.SenastUppdaterad, 126)  AS [SenastUppdaterad_orig],
+MedicationDetailList =
+    (SELECT details.ContentID,
+            details.AdministrationStatus,
+            details.AdministrationStatus_LongDescription,
+            ISNULL(details.Dose, 0) AS [Dose],
+            details.DoseringsEnhet,
+            details.SubstanceType,
+            details.Innholdstoff_Navn,
+            details.Innholdstoff_ATC
+      FROM
+          KardaMart.cytodos.Administration_RCC AS details
+          WHERE details.EncounterId = header.EncounterId
+      FOR JSON PATH),
+
+/* TODO: We might want to create a custom Connect SMT to handle the FeederAudit, but for now we will add them to the query and use standard Connect SMTs to move them to the header */
+[originating.system.identifiers] =
+    (SELECT CONVERT(VARCHAR, header.EncounterId) AS [EncounterId]
+    FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+
+FROM
+KardaMart.cytodos.Administration_RCC AS header
+INNER JOIN latest_header ON
+    header.EncounterId = latest_header.EncounterId
+    AND header.CytodosAdminKey = latest_header.CytodosAdminKey
+) AS result    
+        </textarea>
+      </div>
+
+      <div class="form-floating mb-3">
+        <input form="configure" type="text" name="rowsLimit" id="rowsLimit" class="form-control" value="10" />
+        <label for="rowsLimit" class="form-label">Preview Rows Limit</label>
+        <div id="rowsLimitHelp" class="form-text">The maximum number of rows results to preview from the query using this editor (max 100).</div>
+      </div>
+
+    </div>
+
+    <div class="col">
+
+      <div class="form-floating mb-3">
+        <select form="configure" name="mode" id="mode" class="form-select" onchange="onChangeMode(this.options[this.selectedIndex].value)">
+          <option value="TIMESTAMP_INCREMENTING">timestamp+incrementing</option>
+          <option value="TIMESTAMP">timestamp</option>
+          <option value="INCREMENTING">incrementing</option>
+        </select>
+        <label for="mode" class="form-label">Incremental Mode</label>
+        <div id="modeHelp" class="form-text">The mode for updating a table each time it is polled. See the
+          <a href="https://docs.confluent.io/kafka-connectors/jdbc/current/source-connector/overview.html#incremental-query-modes"
+            target="_blank">Connector's documentation</a>.
+        </div>
+      </div>
+
+      <div id="timestampModeFields">
+        <div class="form-floating mb-3">
+          <input form="configure" type="text" name="timeZone" id="timeZone" class="form-control" value="UTC" readonly />
+          <label for="timeZone" class="form-label">Time Zone</label>
+        </div>
+        <div id="timestampColumnNamesWrapper">
+          <div class="form-label">Timestamp Column Names</div>
+          <div class="input-group mb-3">
+            <input form="configure" type="text" name="timestampColumnNames" class="form-control" value="SenastUppdaterad" />
+            <button type="button" class="btn btn-outline-danger" onclick="remove(this.closest('div'))"><i class="bi-trash" alt="Remove Timestamp Column"></i></button>
+          </div>
+        </div>
+        <div class="row align-items-center mb-5">
+          <div class="col col-sm-3 text-center">
+            <button type="button" class="btn btn-sm btn-outline-success" onclick="addTimestampColumnName()">+ Add Column</button>
+          </div>
+          <div id="timestampColumnNamesHelp" class="col form-text">
+            One or more timestamp columns to detect new or modified rows using the COALESCE SQL function.
+          </div>
+        </div>
+      </div>
+
+      <div id="incrementingModeFields">
+        <div class="form-floating mb-3">
+          <input form="configure" type="text" name="incrementingColumnName" id="incrementingColumnName" class="form-control" value="LatestCytodosAdminKey" />
+          <label for="incrementingColumnName" class="form-label">Incrementing Column Name</label>
+          <div id="incrementingColumnNameHelp" class="form-text">The name of the strictly incrementing column to use to detect new rows.</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div>
+    <hr />
+    <button form="configure" type="button" class="btn btn-primary m-2"
+      hx-post="/querier/results/query"
+      hx-trigger="click"
+      hx-target="#queryResults"
+      hx-swap="innerHTML"
+      hx-on::response-error="displayError(event, 'queryResults')"
+      onclick="displayLoading('detailsQueryResults', 'queryResults')"
+    >
+        Preview Query Results
+    </button>
+  </div>
+
+</form>

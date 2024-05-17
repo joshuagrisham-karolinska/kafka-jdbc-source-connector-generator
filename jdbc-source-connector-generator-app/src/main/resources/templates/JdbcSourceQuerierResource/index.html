@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JDBC Source Connector Generator</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/response-targets.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <!-- Pico: <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" /> -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <script>
+      //# sourceURL=index.html
+      // own custom functions to do various stuff
+      function show(elem) {
+        elem.classList.add('d-block');
+        elem.classList.remove('d-none');
+      }
+      function hide(elem) {
+        elem.classList.add('d-none');
+        elem.classList.remove('d-block');
+      }
+      function remove(elem) {
+        elem.outerHTML = '';
+      }
+      function onToggleDetail(detailElement) {
+        var summaryElement = detailElement.querySelector("summary");
+        if (detailElement.open)
+          summaryElement.classList.add('text-bg-primary');
+        else
+          summaryElement.classList.remove('text-bg-primary');
+      }
+      function displayLoading(detailsElementId, targetElementId) {
+        document.getElementById(detailsElementId).open = true;
+        document.getElementById(targetElementId).innerHTML = '<div class="spinner-border" role="status" />';
+      }
+      function displayError(event, targetElementId) {
+        /*
+        Set targetElementId innerHTML to an error alert
+        Try to parse incoming XHR Response as JSON and just print each key + value that exists in the JSON to the alert
+        Otherwise just print whatever text value exists in event.detail.xhr.response
+        */
+        var errorHtml = '<div class="alert alert-danger" role="alert">' +
+          '<h4 class="alert-heading">Error</h4>';
+        try {
+          var errorResponse = JSON.parse(event.detail.xhr.response);
+          for (var key in errorResponse) {
+            errorHtml += '<hr />';
+            errorHtml += '<h6 class="alert-heading">' + key +'</h6>';
+            errorHtml += '<pre><code>' + errorResponse[key] +'</code></pre>';
+          }
+        } catch (e) {
+          errorHtml += '<pre><code>' + event.detail.xhr.response +'</code></pre>';
+        }
+        errorHtml += '</div>';
+        document.getElementById(targetElementId).innerHTML = errorHtml;
+      }
+    </script>
+
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
+      <div class="container">
+        <a class="navbar-brand" href="#">JDBC Source Connector Generator</a>
+      </div>
+    </nav>
+    <div class="container" id="appbody"><!-- hx-ext="response-targets"-->
+      <details class="card mt-3" id="detailsConfigureQuery" open ontoggle="onToggleDetail(this)">
+        <summary class="card-header text-bg-primary">
+          Query Configuration
+        </summary>
+        <div class="card-body" id="configureQuery" hx-get="/querier/configure/query" hx-trigger="load"></div>
+      </details>
+      <details class="card mt-3" id="detailsQueryResults" ontoggle="onToggleDetail(this)">
+        <summary class="card-header">
+          Query Results
+        </summary>
+        <div class="card-body" id="queryResults">Execute a query first to see a preview of the results here.</div>
+      </details>
+      <details class="card mt-3" id="detailsConfigureConnector" ontoggle="onToggleDetail(this)">
+        <summary class="card-header">
+          Connector and Transformation Configuration
+        </summary>
+        <div class="card-body" id="configureConnector" hx-get="/querier/configure/connector" hx-trigger="load"></div>
+      </details>
+      <details class="card mt-3" id="detailsConnectorResults" ontoggle="onToggleDetail(this)">
+        <summary class="card-header">
+          Connector Results
+        </summary>
+        <div class="card-body" id="connectorResults">Execute the transformations to see a preview of the results here.</div>
+      </details>
+    </div>
+    <footer class="container" id="footer">
+      <p>&nbsp;</p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  </body>
+</html>

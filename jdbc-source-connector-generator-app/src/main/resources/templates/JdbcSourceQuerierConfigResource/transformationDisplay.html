@@ -1,0 +1,35 @@
+<div class="row pb-3 draggable" role="transformationDisplay">
+  <hr />
+  <div class="col-4">
+    <input form="transformationsDisplay" name="className" class="form-control" disabled readonly value="{transformationDefinition.className}" />
+  </div>
+  <div class="col-6">
+    {#for config in transformationDefinition.config.entrySet()}
+    <div class="input-group">
+      <input form="transformationsDisplay" name="configName" class="form-control" disabled readonly value="{config.getKey()}" />
+      <input form="transformationsDisplay" name="configValue" class="form-control" disabled readonly value="{config.getValue()}" />
+      <button form="transformationsDisplay" type="button" class="btn btn-outline-secondary" disabled><i class="bi-slash-circle" alt="Remove Configration Property"></i></button>
+    </div>
+    {/for}
+  </div>
+  <div class="col-2 text-nowrap">
+
+    <!-- actual transformationDefinition should be on the configure form so that it can be sent with the main values -->
+    <input form="configure" type="hidden" name="transformationDefinition" value="{transformationDefinitionJson}" />
+
+    <button form="transformationsDisplay" type="button" class="btn btn-outline-success text-nowrap"
+      hx-trigger="click"
+      hx-post="/querier/configure/transformation/edit"
+      hx-include="previous input[name='transformationDefinition']"
+      hx-target="closest div[role='transformationDisplay']"
+      hx-swap="outerHTML"
+      >
+        <i class="bi-pencil" alt="Edit"></i> Edit
+    </button>
+    <button form="transformationsDisplay" type="button" class="btn btn-outline-danger text-nowrap"
+      onclick="this.closest('[role=transformationDisplay]').outerHTML=''"
+      >
+        <i class="bi-trash" alt="Delete"></i> Delete
+      </button>
+  </div>
+</div>

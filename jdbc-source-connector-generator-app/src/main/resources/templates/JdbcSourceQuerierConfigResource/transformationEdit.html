@@ -1,0 +1,67 @@
+<form name="{uniqueFormName}" id="{uniqueFormName}" class="draggable">
+  <input form="{uniqueFormName}" type="hidden" name="uniqueFormName" value="{uniqueFormName}" />
+  <div class="row pb-3" id="row-{uniqueFormName}">
+    <hr />
+    <div class="col-4">
+      <select form="{uniqueFormName}" name="className" class="form-select" onclick="resetTransformationConfigProperties('{uniqueFormName}')">
+        <option value=""></option>
+        {#for transformationConfig in transformationConfigs.getAll.entrySet}
+        <option value="{transformationConfig.key}" {#if transformationDefinition.className.orEmpty eq transformationConfig.key}selected{/if}>{transformationConfig.key}</option>
+        {/for}
+      </select>
+    </div>
+    <div class="col-6">
+      <div class="row" role="transformationConfig">
+      {#if transformationDefinition != null and transformationDefinition.className != null}
+        {#let configKeys=transformationConfigs.getConfigKeys(transformationDefinition.className.orEmpty)}
+        {#for config in transformationDefinition.config.entrySet.orEmpty}
+          {#include JdbcSourceQuerierConfigResource/transformationConfigEdit
+            uniqueFormName=uniqueFormName
+            configKeys=configKeys
+            selectedConfigKey=config.getKey
+            configValue=config.getValue /}
+        {/for}
+        {#include JdbcSourceQuerierConfigResource/transformationConfigEdit
+          uniqueFormName=uniqueFormName
+          configKeys=configKeys /}
+      {/if}
+      </div>
+      <button form="{uniqueFormName}" type="button" role="addTransformationConfig"
+        hx-trigger="click"
+        hx-post="/querier/configure/transformation/config/edit"
+        hx-params="uniqueFormName,className"
+        hx-target="#{uniqueFormName} div[role=transformationConfig]"
+        hx-swap="beforeend"
+        {#if transformationDefinition.className.or("") == ""}
+        class="btn btn-sm btn-outline-secondary text-nowrap my-2" disabled
+        {#else}
+        class="btn btn-sm btn-outline-success text-nowrap my-2"
+        {/if}
+        >
+          + Add Property
+        </button>
+    </div>
+    <div class="col-2 text-nowrap">
+      <button form="{uniqueFormName}" type="button" class="btn btn-success text-nowrap"
+        hx-trigger="click"
+        hx-post="/querier/configure/transformation/display"
+        hx-params="not transformationDefinition"
+        hx-target="#{uniqueFormName}"
+        hx-swap="outerHTML"
+        > <!--  -->
+          <i class="bi-save" alt="Apply Changes"></i> Apply
+      </button>
+      <input form="{uniqueFormName}" type="hidden" name="transformationDefinition" id="definition-{uniqueFormName}" value="{transformationDefinitionJson}" />
+      <button form="{uniqueFormName}" type="button" class="btn btn-danger text-nowrap"
+        hx-trigger="click"
+        hx-post="/querier/configure/transformation/display"
+        hx-include="previous input[name='transformationDefinition']"
+        hx-target="#{uniqueFormName}"
+        hx-swap="outerHTML"
+        onclick="removeIfNewTransformation(document.querySelector('#definition-{uniqueFormName}'), document.querySelector('#{uniqueFormName}'))"
+        >
+          <i class="bi-x-square" alt="Cancel Changes"></i> Cancel
+        </button>
+    </div>
+  </div>
+</form>
