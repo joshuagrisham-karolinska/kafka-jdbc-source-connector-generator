@@ -61,6 +61,15 @@ public class JdbcSourceQuerierResource {
         return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(schemaMap);
     }
 
+    private DataSource resolveDataSource(String dataSourceNameOrNull,
+        JdbcSourceQuerier.Dialect dialect, String jdbcUrl, String username, String password)
+    {
+        if (!isBlank(dataSourceNameOrNull))
+            return DATASOURCES.getAll().get(dataSourceNameOrNull);
+        
+        return JdbcSourceConnectorDataSources.create("custom", dialect, jdbcUrl, username, password);
+    }
+
     @POST
     @Path("/results/query")
     public TemplateInstance getQueryResults(
@@ -79,26 +88,10 @@ public class JdbcSourceQuerierResource {
         @RestForm String incrementingColumnName
     ) throws ConnectException, SQLException, JsonProcessingException {
 
-        JdbcSourceQuerier.Dialect q_dialect;
-        String q_jdbcUrl;
-        String q_username;
-        String q_password;
-
-        // If user chose a pre-configured DataSource, use it
-        if (!isBlank(datasource)) {
-            DataSource ds = DATASOURCES.getAll().get(datasource);
-            q_dialect = ds.dialect();
-            q_jdbcUrl = ds.jdbcUrl();
-            q_username = ds.username();
-            q_password = ds.password();
-        } else { // otherwise read all of the individual properties from the form
-            q_dialect = dialect;
-            q_jdbcUrl = jdbcUrl;
-            q_username = username;
-            q_password = password;
-        }
+        DataSource ds = resolveDataSource(datasource, dialect, jdbcUrl, username, password);
         JdbcSourceQuerier querier = new JdbcSourceQuerier(
-            q_dialect, q_jdbcUrl, q_username, q_password, query,
+            ds.dialect(), ds.jdbcUrl(), ds.username(), ds.password(),
+            query,
             mode, timestampColumnNames, TimeZone.getTimeZone(timeZone), incrementingColumnName, rowsLimit);
 
         try {
@@ -227,27 +220,10 @@ public class JdbcSourceQuerierResource {
 
 
         // Build the JdbcSourceQuerier including transformations and return it with the template
-        JdbcSourceQuerier.Dialect q_dialect;
-        String q_jdbcUrl;
-        String q_username;
-        String q_password;
-
-        // If user chose a pre-configured DataSource, use it
-        if (datasource != null && !datasource.isBlank()) {
-            DataSource ds = DATASOURCES.getAll().get(datasource);
-            q_dialect = ds.dialect();
-            q_jdbcUrl = ds.jdbcUrl();
-            q_username = ds.username();
-            q_password = ds.password();
-        } else { // otherwise read all of the individual properties from the form
-            q_dialect = dialect;
-            q_jdbcUrl = jdbcUrl;
-            q_username = username;
-            q_password = password;
-        }
-
+        DataSource ds = resolveDataSource(datasource, dialect, jdbcUrl, username, password);
         JdbcSourceQuerier querier = new JdbcSourceQuerier(
-            q_dialect, q_jdbcUrl, q_username, q_password, query,
+            ds.dialect(), ds.jdbcUrl(), ds.username(), ds.password(),
+            query,
             mode, timestampColumnNames, TimeZone.getTimeZone(timeZone), incrementingColumnName, rowsLimit, transformations);
 
         return Templates.listConnectorResults(querier);
