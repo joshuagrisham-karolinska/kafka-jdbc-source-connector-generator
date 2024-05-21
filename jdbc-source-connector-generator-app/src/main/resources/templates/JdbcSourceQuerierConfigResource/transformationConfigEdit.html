@@ -1,7 +1,8 @@
+{@java.lang.String className}
 <div class="input-group">
   <select form="{uniqueFormName}" name="configName" class="form-select">
     <option value=""></option>
-    {#for configKey in configKeys}
+    {#for configKey in inject:jdbcSourceConnectorTransformations.getConfigKeys(className)}
     <option value="{configKey}" {#if selectedConfigKey.orEmpty eq configKey}selected{/if}>{configKey}</option>
     {/for}
   </select>

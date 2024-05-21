@@ -1,5 +1,3 @@
-{@java.util.List<java.lang.String> resultsXml}
-{@java.lang.String schemaXml}
 <div class="row">
 
   <details class="">
@@ -7,7 +5,7 @@
       Transformed Schema (Avro)
     </summary>
     <div class="bg-secondary-subtle">
-      <pre class="p-3"><code id="transformedSchema">{converterUtil.getAvroSchemaJson(querier.peekTransformedResults.valueSchema, querier.peekTransformedResults.value)}</code></pre>
+      <pre class="p-3"><code id="transformedSchema">{inject:jdbcSourceConnectorUtils.getTransformedResultsSchema(querier)}</code></pre>
     </div>
   </details>
 
@@ -18,12 +16,13 @@
       Transformed Schema (XSD)
     </summary>
     <div class="bg-secondary-subtle">
-      <pre class="p-3"><code id="transformedSchemaXml">{schemaXml}</code></pre>
+      <pre class="p-3"><code id="transformedSchemaXml">{inject:jdbcSourceConnectorUtils.getTransformedResultsXmlSchema(querier)}</code></pre>
     </div>
   </details>
 
   <hr />
 
+  {#let resultsXml=inject:jdbcSourceConnectorUtils.getTransformedResultsAsXml(querier)}
   {#for record in querier.getTransformedResults()}
   <details class="" {#if record_count is 1}open{/if}>
     <summary class="">
@@ -68,7 +67,7 @@
         Value (Avro/JSON)
       </summary>
       <div class="bg-secondary-subtle">
-        <pre class="p-3"><code id="transformedRow{record_count}">{converterUtil.getAvroValueJson(record.valueSchema, record.value)}</code></pre>
+        <pre class="p-3"><code id="transformedRow{record_count}">{inject:jdbcSourceConnectorUtils.getAvroJson(record.valueSchema, record.value)}</code></pre>
       </div>
     </details>
 

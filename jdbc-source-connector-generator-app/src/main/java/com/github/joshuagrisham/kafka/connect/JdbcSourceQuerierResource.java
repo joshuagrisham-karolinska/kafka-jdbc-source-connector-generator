@@ -1,6 +1,5 @@
 package com.github.joshuagrisham.kafka.connect;
 
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -9,19 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.xml.transform.OutputKeys;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 
-import org.apache.avro.generic.GenericData;
+import org.apache.commons.text.StringSubstitutor;
 
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.errors.ConnectException;
-import org.apache.kafka.connect.source.SourceRecord;
 
 import org.jboss.resteasy.reactive.RestForm;
 
@@ -29,54 +25,28 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.confluent.connect.avro.AvroData;
-
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateException;
 import io.quarkus.qute.TemplateInstance;
 
-import com.github.joshuagrisham.avro.AvroXmlDataConverter;
-import com.github.joshuagrisham.avro.AvroXmlSchemaConverter;
+import com.github.joshuagrisham.kafka.connect.JdbcSourceConnectorDataSources.DataSource;
+import com.github.joshuagrisham.kafka.connect.JdbcSourceConnectorDataSources.DataSources;
+
+import static com.github.joshuagrisham.kafka.connect.JdbcSourceConnectorUtils.isBlank;
 
 @Path("/querier")
 public class JdbcSourceQuerierResource {
 
-    @Inject
-    JdbcSourceQuerierConfigResource.DataSources datasources;
-
     private final ObjectMapper MAPPER = new ObjectMapper();
 
-    public class ConverterUtil {
-        public String prettyPrintJson(String uglyJson) throws JsonProcessingException {
-            Object jsonObject = MAPPER.readValue(uglyJson, Object.class);
-            return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObject);
-        }
-        private AvroData avroData;
-        public GenericData.Record getAvroRecord(org.apache.kafka.connect.data.Schema schema, Object value) {
-            if (avroData == null)
-                avroData = new AvroData(1);
-            return (GenericData.Record) avroData.fromConnectData(schema, value);
-        }
-        public String getAvroValueJson(org.apache.kafka.connect.data.Schema schema, Object value) throws JsonProcessingException {
-            return prettyPrintJson(getAvroRecord(schema, value).toString());
-        }
-        public String getAvroSchemaJson(org.apache.kafka.connect.data.Schema schema, Object value) throws JsonProcessingException {
-            return prettyPrintJson(getAvroRecord(schema, value).getSchema().toString());
-        }
-    }
-    private final ConverterUtil CONVERTER = new ConverterUtil();
-
-    private boolean isBlank(String string) {
-        if (string == null)
-            return true;
-        return string.isBlank();
-    }
+    @Inject
+    DataSources DATASOURCES;
 
     @CheckedTemplate
     public static class Templates {
         public static native TemplateInstance index();
         public static native TemplateInstance listQueryResults(JdbcSourceQuerier querier);
-        public static native TemplateInstance listConnectorResults(JdbcSourceQuerier querier, ConverterUtil converterUtil);
+        public static native TemplateInstance listConnectorResults(JdbcSourceQuerier querier);
     }
 
     @GET
@@ -115,8 +85,8 @@ public class JdbcSourceQuerierResource {
         String q_password;
 
         // If user chose a pre-configured DataSource, use it
-        if (datasource != null && !datasource.isBlank()) {
-            JdbcSourceQuerierConfigResource.DataSource ds = datasources.getDataSources().get(datasource);
+        if (!isBlank(datasource)) {
+            DataSource ds = DATASOURCES.getAll().get(datasource);
             q_dialect = ds.dialect();
             q_jdbcUrl = ds.jdbcUrl();
             q_username = ds.username();
@@ -264,7 +234,7 @@ public class JdbcSourceQuerierResource {
 
         // If user chose a pre-configured DataSource, use it
         if (datasource != null && !datasource.isBlank()) {
-            JdbcSourceQuerierConfigResource.DataSource ds = datasources.getDataSources().get(datasource);
+            DataSource ds = DATASOURCES.getAll().get(datasource);
             q_dialect = ds.dialect();
             q_jdbcUrl = ds.jdbcUrl();
             q_username = ds.username();
@@ -280,21 +250,7 @@ public class JdbcSourceQuerierResource {
             q_dialect, q_jdbcUrl, q_username, q_password, query,
             mode, timestampColumnNames, TimeZone.getTimeZone(timeZone), incrementingColumnName, rowsLimit, transformations);
 
-
-        // Hack / TODO: Also do some conversions from Avro to XML and show the XML data on the page as well?
-        List<String> resultsXml = new ArrayList<>();
-        String schemaXml = "";
-        for (SourceRecord record : querier.getTransformedResults()) {
-            GenericData.Record avroRecord = CONVERTER.getAvroRecord(record.valueSchema(), record.value());
-            resultsXml.add(AvroXmlDataConverter.convert(avroRecord, false, true));
-            if (schemaXml == "") {
-                StringWriter stringWriter = new StringWriter();
-                AvroXmlSchemaConverter.convert(avroRecord.getSchema()).write(stringWriter, Map.of(OutputKeys.INDENT, "yes"));
-                schemaXml = stringWriter.toString();
-            }
-        }
-
-        return Templates.listConnectorResults(querier, CONVERTER).data("resultsXml", resultsXml).data("schemaXml", schemaXml);
+        return Templates.listConnectorResults(querier);
     }
 
 }

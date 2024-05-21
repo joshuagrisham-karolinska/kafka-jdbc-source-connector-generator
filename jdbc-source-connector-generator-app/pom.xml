@@ -25,6 +25,8 @@
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.2.5</surefire-plugin.version>
 
+        <apache-commons-text.version>1.12.0</apache-commons-text.version>
+
         <!-- Kryptonite's dependency versions -->
         <google.tink.version>1.7.0</google.tink.version>
         <kryo.version>5.4.0</kryo.version>
@@ -61,7 +63,11 @@
             <artifactId>avro-xml-converter</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>${apache-commons-text.version}</version>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>

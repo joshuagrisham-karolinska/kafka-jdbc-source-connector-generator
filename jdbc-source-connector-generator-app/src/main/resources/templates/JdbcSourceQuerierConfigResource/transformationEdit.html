@@ -5,25 +5,24 @@
     <div class="col-4">
       <select form="{uniqueFormName}" name="className" class="form-select" onclick="resetTransformationConfigProperties('{uniqueFormName}')">
         <option value=""></option>
-        {#for transformationConfig in transformationConfigs.getAll.entrySet}
-        <option value="{transformationConfig.key}" {#if transformationDefinition.className.orEmpty eq transformationConfig.key}selected{/if}>{transformationConfig.key}</option>
+        {#for transformationEntry in inject:jdbcSourceConnectorTransformations.getAll.entrySet}
+        <option value="{transformationEntry.key}" {#if transformationDefinition.className.orEmpty eq transformationEntry.key}selected{/if}>{transformationEntry.key}</option>
         {/for}
       </select>
     </div>
     <div class="col-6">
       <div class="row" role="transformationConfig">
       {#if transformationDefinition != null and transformationDefinition.className != null}
-        {#let configKeys=transformationConfigs.getConfigKeys(transformationDefinition.className.orEmpty)}
         {#for config in transformationDefinition.config.entrySet.orEmpty}
           {#include JdbcSourceQuerierConfigResource/transformationConfigEdit
             uniqueFormName=uniqueFormName
-            configKeys=configKeys
+            className=transformationDefinition.className.orEmpty
             selectedConfigKey=config.getKey
             configValue=config.getValue /}
         {/for}
         {#include JdbcSourceQuerierConfigResource/transformationConfigEdit
           uniqueFormName=uniqueFormName
-          configKeys=configKeys /}
+          className=transformationDefinition.className.orEmpty /}
       {/if}
       </div>
       <button form="{uniqueFormName}" type="button" role="addTransformationConfig"

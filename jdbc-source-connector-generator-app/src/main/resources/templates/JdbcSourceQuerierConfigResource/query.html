@@ -38,7 +38,7 @@
 
       <div class="form-floating mb-3">
         <select form="configure" name="datasource" id="datasource" class="form-select" onchange="onChangeDatasource(this.options[this.selectedIndex].value)">
-          {#for datasource : datasources.entrySet()}
+          {#for datasource : inject:jdbcSourceConnectorDataSources.all.entrySet}
           <option value="{datasource.getKey()}">{datasource.getValue().name}</option>
           {/for}
           <option value="">Custom...</option>
@@ -48,7 +48,7 @@
       <div id="customDatasource" class="d-none">
         <div class="form-floating mb-3">
           <select form="configure" name="dialect" id="dialect" class="form-select">
-            {#for dialect : dialects}
+            {#for dialect : inject:jdbcSourceConnectorDataSources.dialects}
             <option value="{dialect}">{dialect}</option>
             {/for}
           </select>
