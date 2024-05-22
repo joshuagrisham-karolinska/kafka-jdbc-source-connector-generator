@@ -57,6 +57,10 @@ public class JdbcSourceConnectorTransformations {
             // TODO: Do we want to support Predicates and if so then how should this exposed in the GUI? A whole separate section of the GUI and then that we add "predicates" as a configName option to all SMT types?
             //all.put("org.apache.kafka.connect.transforms.Filter", org.apache.kafka.connect.transforms.Filter.CONFIG_DEF.names());
 
+            // Add ExpandJson SMT
+            all.put("com.github.joshuagrisham.kafka.connect.transforms.ExpandJson$Key", Set.of("fields", "schema.name.prefix"));
+            all.put("com.github.joshuagrisham.kafka.connect.transforms.ExpandJson$Value", Set.of("fields", "schema.name.prefix"));
+
             // Add ExpandJSON SMT
             all.put("com.redhat.insights.expandjsonsmt.ExpandJSON$Value", Set.of("sourceFields"));
 

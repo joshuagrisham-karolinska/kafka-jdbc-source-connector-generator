@@ -1,0 +1,64 @@
+
+## Map of pre-defined data sources using the following format:
+# source:
+#   datasource:
+#     {name}:        # Assign a key name which will be used to refer to this datasource in various places
+#       name:        # Description which will be shown in the GUI etc
+#       dialect:     # which JdbcSourceQuerier.Dialect this datasource should use
+#       jdbc-url:    # JDBC URL
+#       username:    # Username
+#       password:    # Password
+
+source:
+  datasource:
+    KardaMart_cytodos_reader:
+      name: KardaMart (cytodos_reader)
+      dialect: SQLSERVER
+      jdbc-url: jdbc:sqlserver://localhost:31433;databaseName=KardaMart;integratedSecurity=false;encrypt=false;trustServerCertificate=true;
+      username: SA
+      password: Password1!
+
+"%docker":
+  source:
+    datasource:
+      KardaMart_cytodos_reader:
+        jdbc-url: jdbc:sqlserver://database:1433;databaseName=KardaMart;integratedSecurity=false;encrypt=false;trustServerCertificate=true;
+
+
+decryption:
+  parameter: # Passphrases which can be used with the per-datasource decryption expressions below
+    KardaMart_cytodos_reader:
+      pnrPassphrase: Password1!
+
+  expression:
+    # named expressions per datasource
+    # the ${decrypt:decryption_expression_name:encrypted_field_name} StringLookup will also pass all above decryption.parameters for the same named datasource as well
+    # as the value ${encryptedField} which can be used in the below expressions (make sure these are all escaped e.g. \${encryptedField} otherwise Quarkus will try to resolve them)
+    KardaMart_cytodos_reader:
+      personnummer: >-
+        CASE /* Fix for known problem where last 8 bytes of decrypted Pnr are NULL characters (0x00) and should be omitted from the value */
+            WHEN SUBSTRING(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${encryptedField}),
+                    LEN(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${encryptedField})) - 7,
+                    8) = 0x00
+                THEN
+                    CAST(SUBSTRING(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${encryptedField}),
+                        0,
+                        LEN(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${encryptedField})) - 8)
+                    AS NVARCHAR)
+            ELSE CAST(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${encryptedField}) AS NVARCHAR)
+            END
+
+quarkus:
+
+  http:
+    limits:
+      # since we will be passing full SQL Queries via HTTP Forms then we want to increase Quarkus's default (2048 bytes)
+      max-form-attribute-size: 4M
+
+  devservices:
+    enabled: false
+  container-image:
+    build: true
+  jib:
+    jvm-arguments: >-
+      --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED

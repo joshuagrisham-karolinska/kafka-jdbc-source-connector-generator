@@ -92,17 +92,7 @@ WHERE
 SELECT * FROM (
 SELECT
 header.CytodosAdminKey AS [LatestCytodosAdminKey],
-CASE /* Fix for known problem where last 8 bytes of decrypted Pnr are NULL characters (0x00) and should be omitted from the value */
-    WHEN SUBSTRING(DECRYPTBYPASSPHRASE('Password1!', header.Pnr),
-            LEN(DECRYPTBYPASSPHRASE('Password1!', header.Pnr)) - 7,
-            8) = 0x00
-        THEN
-            CAST(SUBSTRING(DECRYPTBYPASSPHRASE('Password1!', header.Pnr),
-                0,
-                LEN(DECRYPTBYPASSPHRASE('Password1!', header.Pnr)) - 8)
-            AS NVARCHAR)
-    ELSE CAST(DECRYPTBYPASSPHRASE('Password1!', header.Pnr) AS NVARCHAR)
-    END AS [Personnummer],
+$\{decrypt:personnummer:[header].[Pnr]} AS [Personnummer],
 header.RekvisisjonId,
 header.EncounterId,
 CONVERT(VARCHAR(33), header.EncounterDate, 126) AS [EncounterDate],

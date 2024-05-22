@@ -14,7 +14,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 
 import org.apache.commons.text.StringSubstitutor;
-
+import org.apache.commons.text.lookup.StringLookupFactory;
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.errors.ConnectException;
@@ -28,6 +28,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateException;
 import io.quarkus.qute.TemplateInstance;
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithParentName;
 
 import com.github.joshuagrisham.kafka.connect.JdbcSourceConnectorDataSources.DataSource;
 import com.github.joshuagrisham.kafka.connect.JdbcSourceConnectorDataSources.DataSources;
@@ -70,6 +72,33 @@ public class JdbcSourceQuerierResource {
         return JdbcSourceConnectorDataSources.create("custom", dialect, jdbcUrl, username, password);
     }
 
+    @ConfigMapping(prefix = "decryption.expression")
+    public interface DecryptionExpressions {
+        @WithParentName
+        Map<String, Map<String, String>> map();
+    }
+    @Inject
+    private DecryptionExpressions decryptionExpressions;
+
+    @ConfigMapping(prefix = "decryption.parameter")
+    public interface DecryptionParameters {
+        @WithParentName
+        Map<String, Map<String, String>> map();
+    }
+    @Inject
+    private DecryptionParameters decryptionParameters;
+
+    private String finalQueryText(String datasource, String query) {
+        QueryDecryptFunctionStringLookup queryDecryptStringLookup =
+            new QueryDecryptFunctionStringLookup(datasource, decryptionExpressions.map(), decryptionParameters.map());
+        StringSubstitutor substitutor = new StringSubstitutor(
+            StringLookupFactory.INSTANCE.interpolatorStringLookup(
+                Map.of("decrypt", queryDecryptStringLookup),
+                null,
+                true));
+        return substitutor.replace(query);
+    }
+
     @POST
     @Path("/results/query")
     public TemplateInstance getQueryResults(
@@ -91,7 +120,7 @@ public class JdbcSourceQuerierResource {
         DataSource ds = resolveDataSource(datasource, dialect, jdbcUrl, username, password);
         JdbcSourceQuerier querier = new JdbcSourceQuerier(
             ds.dialect(), ds.jdbcUrl(), ds.username(), ds.password(),
-            query,
+            finalQueryText(datasource, query),
             mode, timestampColumnNames, TimeZone.getTimeZone(timeZone), incrementingColumnName, rowsLimit);
 
         try {
@@ -223,7 +252,7 @@ public class JdbcSourceQuerierResource {
         DataSource ds = resolveDataSource(datasource, dialect, jdbcUrl, username, password);
         JdbcSourceQuerier querier = new JdbcSourceQuerier(
             ds.dialect(), ds.jdbcUrl(), ds.username(), ds.password(),
-            query,
+            finalQueryText(datasource, query),
             mode, timestampColumnNames, TimeZone.getTimeZone(timeZone), incrementingColumnName, rowsLimit, transformations);
 
         return Templates.listConnectorResults(querier);
