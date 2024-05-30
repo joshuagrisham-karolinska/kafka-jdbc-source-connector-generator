@@ -154,7 +154,7 @@
         <dependency>
             <groupId>com.github.joshuagrisham.kafka.connect</groupId>
             <artifactId>expand-json-transform</artifactId>
-            <version>0.0.1</version>
+            <version>0.0.2</version>
         </dependency>
 
 
@@ -228,11 +228,11 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <uri>https://github.com/joshuagrisham-karolinska/kafka-connect-expand-json-transform/releases/download/v0.0.1/expand-json-transform-v0.0.1.jar</uri>
-                            <url>https://github.com/joshuagrisham-karolinska/kafka-connect-expand-json-transform/releases/download/v0.0.1/expand-json-transform-v0.0.1.jar</url>
+                            <uri>https://github.com/joshuagrisham-karolinska/kafka-connect-expand-json-transform/releases/download/v0.0.2/expand-json-transform-0.0.2.jar</uri>
+                            <url>https://github.com/joshuagrisham-karolinska/kafka-connect-expand-json-transform/releases/download/v0.0.2/expand-json-transform-0.0.2.jar</url>
                             <unpack>false</unpack>
                             <outputDirectory>${project.build.directory}/downloaded/expand-json-transform</outputDirectory>
-                            <md5>95367a128f1238428c236cb61a43b693</md5>
+                            <md5>60d2e0c48368752b48820e3ae5fd5e4c</md5>
                         </configuration>
                     </execution>
                 </executions>
@@ -315,11 +315,11 @@
                             <goal>install-file</goal>
                         </goals>
                         <configuration>
-                            <file>${project.build.directory}/downloaded/expand-json-transform/expand-json-transform-v0.0.1.jar</file>
+                            <file>${project.build.directory}/downloaded/expand-json-transform/expand-json-transform-0.0.2.jar</file>
                             <packaging>jar</packaging>
                             <groupId>com.github.joshuagrisham.kafka.connect</groupId>
                             <artifactId>expand-json-transform</artifactId>
-                            <version>0.0.1</version>
+                            <version>0.0.2</version>
                             <generatePom>false</generatePom>
                         </configuration>
                     </execution>
