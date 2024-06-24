@@ -72,28 +72,28 @@ public class JdbcSourceQuerierResource {
         return JdbcSourceConnectorDataSources.create("custom", dialect, jdbcUrl, username, password);
     }
 
-    @ConfigMapping(prefix = "decryption.expression")
-    public interface DecryptionExpressions {
+    @ConfigMapping(prefix = "sql.expressions")
+    public interface SqlExpressions {
         @WithParentName
         Map<String, Map<String, String>> map();
     }
     @Inject
-    private DecryptionExpressions decryptionExpressions;
+    private SqlExpressions sqlExpressions;
 
-    @ConfigMapping(prefix = "decryption.parameter")
-    public interface DecryptionParameters {
+    @ConfigMapping(prefix = "sql.parameters")
+    public interface SqlParameters {
         @WithParentName
         Map<String, Map<String, String>> map();
     }
     @Inject
-    private DecryptionParameters decryptionParameters;
+    private SqlParameters sqlParameters;
 
     private String finalQueryText(String datasource, String query) {
-        QueryDecryptFunctionStringLookup queryDecryptStringLookup =
-            new QueryDecryptFunctionStringLookup(datasource, decryptionExpressions.map(), decryptionParameters.map());
+        SqlExpressionFunctionStringLookup sqlExpressionStringLookup =
+            new SqlExpressionFunctionStringLookup(datasource, sqlExpressions.map(), sqlParameters.map());
         StringSubstitutor substitutor = new StringSubstitutor(
             StringLookupFactory.INSTANCE.interpolatorStringLookup(
-                Map.of("decrypt", queryDecryptStringLookup),
+                Map.of("sql", sqlExpressionStringLookup),
                 null,
                 true));
         return substitutor.replace(query);

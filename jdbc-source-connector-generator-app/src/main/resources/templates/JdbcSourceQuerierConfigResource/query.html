@@ -92,7 +92,7 @@ WHERE
 SELECT * FROM (
 SELECT
 header.CytodosAdminKey AS [LatestCytodosAdminKey],
-$\{decrypt:personnummer:[header].[Pnr]} AS [Personnummer],
+$\{sql:decryptpersonnummer:[header].[Pnr]} AS [Personnummer],
 header.RekvisisjonId,
 header.EncounterId,
 CONVERT(VARCHAR(33), header.EncounterDate, 126) AS [EncounterDate],
