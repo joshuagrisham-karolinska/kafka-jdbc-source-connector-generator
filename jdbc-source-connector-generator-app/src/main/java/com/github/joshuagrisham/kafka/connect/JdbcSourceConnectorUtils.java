@@ -15,12 +15,13 @@ import org.apache.kafka.connect.source.SourceRecord;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.github.joshuagrisham.avro.AvroXmlDataConverter;
 import com.github.joshuagrisham.avro.AvroXmlSchemaConverter;
 
 import io.confluent.connect.avro.AvroData;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Named;
 
@@ -28,7 +29,9 @@ import jakarta.inject.Named;
 @Named
 public class JdbcSourceConnectorUtils {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = JsonMapper.builder()
+        .configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true)
+        .build();
     private static final AvroData AVRODATA = new AvroData(1);
 
     public String prettyPrintJson(String uglyJson) throws JsonProcessingException {
@@ -89,6 +92,16 @@ public class JdbcSourceConnectorUtils {
         if (string == null)
             return true;
         return string.isBlank();
+    }
+
+    public String getConnectorPropertiesJson(JdbcSourceQuerier querier) throws JsonProcessingException {
+
+        String querierString = MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(querier);
+        // mask the password
+        querierString = querierString
+            .replaceAll("\"password\"\s{0,}:\s{0,}\"" + querier.getPassword() + "\"",
+                "\"password\": \"********\"");
+        return querierString;
     }
 
 }

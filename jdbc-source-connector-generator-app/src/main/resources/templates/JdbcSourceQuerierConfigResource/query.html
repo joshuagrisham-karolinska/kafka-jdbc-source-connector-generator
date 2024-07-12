@@ -67,78 +67,18 @@
           <label for="password" class="form-label">Password</label>
         </div>
       </div>
+
+    <script>
+      //# sourceURL=querier/configure/query2
+
+      // trigger onChangeDatasource(value) in case there are not any pre-configured data sources
+      onChangeDatasource(document.getElementById("datasource").options[document.getElementById("datasource").selectedIndex].value);
+    </script>
+
       <div class="mb-3">
         <!-- TODO: remove hard-coded query? -->
         <label for="query" class="form-label">Query</label>
-        <textarea name="query" id="query" class="form-control" rows="15">
-WITH
-latest_header AS
-(
-SELECT
-    EncounterId,
-    SenastUppdaterad,
-    CytodosAdminKey
-FROM
-    (SELECT
-        EncounterId,
-        SenastUppdaterad,
-        CytodosAdminKey,
-        FIRST_VALUE(CytodosAdminKey) OVER (PARTITION BY EncounterId ORDER BY SenastUppdaterad DESC, CytodosAdminKey DESC) AS LastUpdatedCytodosAdminKey
-    FROM
-        KardaMart.cytodos.Administration_RCC) AS header_with_latest
-WHERE
-    CytodosAdminKey = LastUpdatedCytodosAdminKey
-)
-SELECT * FROM (
-SELECT
-header.CytodosAdminKey AS [LatestCytodosAdminKey],
-$\{sql:decryptpersonnummer:[header].[Pnr]} AS [Personnummer],
-header.RekvisisjonId,
-header.EncounterId,
-CONVERT(VARCHAR(33), header.EncounterDate, 126) AS [EncounterDate],
-header.EncounterStatus,
-header.EncounterStatus_LongDescription,
-header.SignatureUser_FullName,
-header.SignatureUser_UserName,
-header.PDL_enhet_Namn,
-header.PDL_enhet_HSAID,
-header.Sparrgrupp,
-CONVERT(VARCHAR(33), header.Inskrivningstidpunkt, 126) AS [Inskrivningstidpunkt],
-CONVERT(VARCHAR(33), header.Utskrivningstidpunkt, 126) AS [Utskrivningstidpunkt],
-header.Diagnoskod_ICD10,
-header.Diagnosnamn_ICD10,
-header.Vardenhet_id,
-header.Vardenhet_namn,
-header.Vardenhet_HSAID,
-header.Slutenvard,
-header.SenastUppdaterad,
-CONVERT(VARCHAR(33), header.SenastUppdaterad, 126)  AS [SenastUppdaterad_orig],
-MedicationDetailList =
-    (SELECT details.ContentID,
-            details.AdministrationStatus,
-            details.AdministrationStatus_LongDescription,
-            ISNULL(details.Dose, 0) AS [Dose],
-            details.DoseringsEnhet,
-            details.SubstanceType,
-            details.Innholdstoff_Navn,
-            details.Innholdstoff_ATC
-      FROM
-          KardaMart.cytodos.Administration_RCC AS details
-          WHERE details.EncounterId = header.EncounterId
-      FOR JSON PATH),
-
-/* TODO: We might want to create a custom Connect SMT to handle the FeederAudit, but for now we will add them to the query and use standard Connect SMTs to move them to the header */
-[originating.system.identifiers] =
-    (SELECT CONVERT(VARCHAR, header.EncounterId) AS [EncounterId]
-    FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
-
-FROM
-KardaMart.cytodos.Administration_RCC AS header
-INNER JOIN latest_header ON
-    header.EncounterId = latest_header.EncounterId
-    AND header.CytodosAdminKey = latest_header.CytodosAdminKey
-) AS result    
-        </textarea>
+        <textarea name="query" id="query" class="form-control" rows="15"></textarea>
       </div>
 
       <div class="form-floating mb-3">
@@ -172,7 +112,7 @@ INNER JOIN latest_header ON
         <div id="timestampColumnNamesWrapper">
           <div class="form-label">Timestamp Column Names</div>
           <div class="input-group mb-3">
-            <input form="configure" type="text" name="timestampColumnNames" class="form-control" value="SenastUppdaterad" />
+            <input form="configure" type="text" name="timestampColumnNames" class="form-control" />
             <button type="button" class="btn btn-outline-danger" onclick="remove(this.closest('div'))"><i class="bi-trash" alt="Remove Timestamp Column"></i></button>
           </div>
         </div>
@@ -188,7 +128,7 @@ INNER JOIN latest_header ON
 
       <div id="incrementingModeFields">
         <div class="form-floating mb-3">
-          <input form="configure" type="text" name="incrementingColumnName" id="incrementingColumnName" class="form-control" value="LatestCytodosAdminKey" />
+          <input form="configure" type="text" name="incrementingColumnName" id="incrementingColumnName" class="form-control" />
           <label for="incrementingColumnName" class="form-label">Incrementing Column Name</label>
           <div id="incrementingColumnNameHelp" class="form-text">The name of the strictly incrementing column to use to detect new rows.</div>
         </div>

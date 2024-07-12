@@ -23,12 +23,12 @@ import io.confluent.connect.jdbc.source.JdbcSourceTaskConfig;
 import io.confluent.connect.jdbc.source.TimestampIncrementingOffset;
 import io.confluent.connect.jdbc.source.TimestampIncrementingTableQuerier;
 
-@JsonIgnoreProperties({"config", "connectorDialect", "connectorQuerier", "queryResults", "transformedResults"})
+@JsonIgnoreProperties({"queryResultsAsStructs", "querySchema"})
 public class JdbcSourceQuerier {
 
     public enum Dialect {
-        POSTGRES("PostgreSqlDatabaseDialect"),
-        SQLSERVER("SqlServerDatabaseDialect");
+        SQLSERVER("SqlServerDatabaseDialect"),
+        POSTGRES("PostgreSqlDatabaseDialect");
         //TODO test/implement more of them? [Db2DatabaseDialect, MySqlDatabaseDialect, SybaseDatabaseDialect, GenericDatabaseDialect, OracleDatabaseDialect, SqlServerDatabaseDialect, PostgreSqlDatabaseDialect, SqliteDatabaseDialect, DerbyDatabaseDialect, SapHanaDatabaseDialect, VerticaDatabaseDialect]
 
         public final String className;
@@ -87,7 +87,7 @@ public class JdbcSourceQuerier {
         this.query = query.replaceAll("[\\t\\n\\r]+"," ");
     }
 
-    private JdbcSourceTaskConfig config;
+    private transient JdbcSourceTaskConfig config;
     public JdbcSourceTaskConfig getConfig() {
         return config;
     }
@@ -95,7 +95,7 @@ public class JdbcSourceQuerier {
         this.config = config;
     }
 
-    private DatabaseDialect connectorDialect;
+    private transient DatabaseDialect connectorDialect;
     public DatabaseDialect getConnectorDialect() {
         return connectorDialect;
     }
@@ -200,7 +200,7 @@ public class JdbcSourceQuerier {
         this.transformations = transformations;
     }
 
-    private TimestampIncrementingTableQuerier connectorQuerier;
+    private transient TimestampIncrementingTableQuerier connectorQuerier;
     public TimestampIncrementingTableQuerier getConnectorQuerier() {
         return connectorQuerier;
     }
@@ -241,7 +241,7 @@ public class JdbcSourceQuerier {
         return connectorQuerier;
     }
 
-    private List<SourceRecord> queryResults;
+    private transient List<SourceRecord> queryResults;
     public List<SourceRecord> getQueryResults() throws ConnectException, SQLException {
         if (queryResults == null)
             return fetchQueryResults();
@@ -280,7 +280,7 @@ public class JdbcSourceQuerier {
         return null;
     }
 
-    private List<SourceRecord> transformedResults;
+    private transient List<SourceRecord> transformedResults;
     public List<SourceRecord> getTransformedResults() throws ConnectException, SQLException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
         transformedResults = new ArrayList<>();
         for (SourceRecord record : getQueryResults()) {

@@ -4,21 +4,21 @@
     <details open>
       <summary>Standard Transformations</summary>
       <div class="form-floating m-3">
-        <input form="configure" type="text" name="schemaMetadataName" id="schemaMetadataName" class="form-control" value="se.karolinska.schemas.karda.cytodos.AdministrationRCC" />
+        <input form="configure" type="text" name="schemaMetadataName" id="schemaMetadataName" class="form-control" />
         <label for="schemaMetadataName" class="form-label">Schema Name</label>
         <div id="schemaMetadataNameHelp" class="form-text">Fully-qualified schema name to use for the generated Avro
           schema. Example: <code>se.karolinska.schemas.karda.cytodos.AdministrationRCC</code></div>
       </div>
 
       <div class="form-floating m-3">
-        <input form="configure" type="text" name="keyField" id="keyField" class="form-control" value="EncounterId" />
-        <label for="keyField" class="form-label">Key Field</label>
+        <input form="configure" type="text" name="keyField" id="keyField" class="form-control" />
+        <label for="keyField" class="form-label">Kafka Message Key Field</label>
         <div id="keyFieldHelp" class="form-text">Field to be used as the Kafka message key. Messages with the same key
           will be stored in the same partition and can be processed according to the order that they are produced.</div>
       </div>
 
       <div class="form-floating m-3">
-        <input form="configure" type="text" name="personnummerField" id="personnummerField" class="form-control" value="Personnummer" />
+        <input form="configure" type="text" name="personnummerField" id="personnummerField" class="form-control" />
         <label for="personnummerField" class="form-label">Personummer Field</label>
         <div id="personnummerFieldHelp" class="form-text">Field which contains a Swedish Personnummer and will be
           encrypted in the header <code>encrypted:http://electronichealth.se/identifier/personnummer</code></div>
@@ -41,7 +41,7 @@
       <div class="m-3">
         <div class="form-label">originating.system.id Value</div>
         <div class="input-group">
-          <input form="configure" type="text" name="originatingSystemId" id="originatingSystemId" class="form-control" value="cytodos" />
+          <input form="configure" type="text" name="originatingSystemId" id="originatingSystemId" class="form-control" />
         </div>
         <div id="originatingSystemIdHelp" class="form-text">Hard-coded value to uniquely identify the original source
           system of the row's data.</div>
@@ -50,13 +50,12 @@
       <div class="m-3">
         <div class="form-label">originating.system.identifiers Field</div>
         <div class="input-group">
-          <input form="configure" type="text" name="originatingSystemIdentifiersField" id="originatingSystemIdentifiersField"
-            class="form-control" value="originating.system.identifiers" />
+          <input form="configure" type="text" name="originatingSystemIdentifiersField" id="originatingSystemIdentifiersField" class="form-control" />
           <div class="btn-group" role="group">
-            <input form="configure" type="radio" class="btn-check" name="originatingSystemIdentifiersFieldOperation" id="originatingSystemIdentifiersFieldOperationMove" value="move" autocomplete="off" checked>
+            <input form="configure" type="radio" class="btn-check" name="originatingSystemIdentifiersFieldOperation" id="originatingSystemIdentifiersFieldOperationMove" value="move" autocomplete="off" />
             <label class="btn btn-outline-primary" for="originatingSystemIdentifiersFieldOperationMove">Move</label>
 
-            <input form="configure" type="radio" class="btn-check" name="originatingSystemIdentifiersFieldOperation" id="originatingSystemIdentifiersFieldOperationCopy" value="copy" autocomplete="off">
+            <input form="configure" type="radio" class="btn-check" name="originatingSystemIdentifiersFieldOperation" id="originatingSystemIdentifiersFieldOperationCopy" value="copy" autocomplete="off" checked />
             <label class="btn btn-outline-primary" for="originatingSystemIdentifiersFieldOperationCopy">Copy</label>
           </div>
         </div>
@@ -68,12 +67,12 @@
       <div class="m-3">
         <div class="form-label">originating.system.versionId Field</div>
         <div class="input-group">
-          <input form="configure" type="text" name="originatingSystemVersionIdField" id="originatingSystemVersionIdField" class="form-control" value="SenastUppdaterad_orig" />
+          <input form="configure" type="text" name="originatingSystemVersionIdField" id="originatingSystemVersionIdField" class="form-control" />
           <div class="btn-group" role="group">
-            <input form="configure" type="radio" class="btn-check" name="originatingSystemVersionIdFieldOperation" id="originatingSystemVersionIdFieldOperationMove" value="move" autocomplete="off" checked>
+            <input form="configure" type="radio" class="btn-check" name="originatingSystemVersionIdFieldOperation" id="originatingSystemVersionIdFieldOperationMove" value="move" autocomplete="off" />
             <label class="btn btn-outline-primary" for="originatingSystemVersionIdFieldOperationMove">Move</label>
 
-            <input form="configure" type="radio" class="btn-check" name="originatingSystemVersionIdFieldOperation" id="originatingSystemVersionIdFieldOperationCopy" value="copy" autocomplete="off">
+            <input form="configure" type="radio" class="btn-check" name="originatingSystemVersionIdFieldOperation" id="originatingSystemVersionIdFieldOperationCopy" value="copy" autocomplete="off" checked />
             <label class="btn btn-outline-primary" for="originatingSystemVersionIdFieldOperationCopy">Copy</label>
           </div>
         </div>
@@ -87,12 +86,12 @@
       <div class="m-3">
         <div class="form-label">originating.system.time Field</div>
         <div class="input-group">
-          <input form="configure" type="text" name="originatingSystemVersionTimeField" id="originatingSystemVersionTimeField" class="form-control" value="SenastUppdaterad_orig" />
+          <input form="configure" type="text" name="originatingSystemVersionTimeField" id="originatingSystemVersionTimeField" class="form-control" />
           <div class="btn-group" role="group">
-            <input form="configure" type="radio" class="btn-check" name="originatingSystemVersionTimeFieldOperation" id="originatingSystemVersionTimeFieldOperationMove" value="move" autocomplete="off" checked>
+            <input form="configure" type="radio" class="btn-check" name="originatingSystemVersionTimeFieldOperation" id="originatingSystemVersionTimeFieldOperationMove" value="move" autocomplete="off" />
             <label class="btn btn-outline-primary" for="originatingSystemVersionTimeFieldOperationMove">Move</label>
 
-            <input form="configure" type="radio" class="btn-check" name="originatingSystemVersionTimeFieldOperation" id="originatingSystemVersionTimeFieldOperationCopy" value="copy" autocomplete="off">
+            <input form="configure" type="radio" class="btn-check" name="originatingSystemVersionTimeFieldOperation" id="originatingSystemVersionTimeFieldOperationCopy" value="copy" autocomplete="off" checked />
             <label class="btn btn-outline-primary" for="originatingSystemVersionTimeFieldOperationCopy">Copy</label>
           </div>
         </div>

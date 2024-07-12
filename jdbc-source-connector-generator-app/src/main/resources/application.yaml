@@ -9,46 +9,46 @@
 #       username:    # Username
 #       password:    # Password
 
-source:
-  datasource:
-    KardaMart_cytodos_reader:
-      name: KardaMart (cytodos_reader)
-      dialect: SQLSERVER
-      jdbc-url: jdbc:sqlserver://localhost:31433;databaseName=KardaMart;integratedSecurity=false;encrypt=false;trustServerCertificate=true;
-      username: SA
-      password: Password1!
+#source:
+#  datasource:
+#    KardaMart_cytodos_reader:
+#      name: KardaMart (cytodos_reader)
+#      dialect: SQLSERVER
+#      jdbc-url: jdbc:sqlserver://localhost:31433;databaseName=KardaMart;integratedSecurity=false;encrypt=false;trustServerCertificate=true;
+#      username: SA
+#      password: Password1!
+#
+#"%docker":
+#  source:
+#    datasource:
+#      KardaMart_cytodos_reader:
+#        jdbc-url: jdbc:sqlserver://database:1433;databaseName=KardaMart;integratedSecurity=false;encrypt=false;trustServerCertificate=true;
 
-"%docker":
-  source:
-    datasource:
-      KardaMart_cytodos_reader:
-        jdbc-url: jdbc:sqlserver://database:1433;databaseName=KardaMart;integratedSecurity=false;encrypt=false;trustServerCertificate=true;
-
-sql:
-  parameters:
-    # Per-datasource parameters which can be used with the per-datasource expressions below
-
-    KardaMart_cytodos_reader:
-      pnrPassphrase: Password1!
-
-  expressions:
-    # named expressions per datasource
-    # the ${sql:expressionName:expressionValue} StringLookup will also pass all above sql.parameters for the same named datasource as well
-    # as the value ${expressionValue} which can be used in the below expressions (make sure these are all escaped e.g. \${expressionValue} otherwise Quarkus will try to resolve them)
-
-    KardaMart_cytodos_reader:
-      decryptpersonnummer: >-
-        CASE /* Fix for known problem where last 8 bytes of decrypted Pnr are NULL characters (0x00) and should be omitted from the value */
-            WHEN SUBSTRING(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${expressionValue}),
-                    LEN(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${expressionValue})) - 7,
-                    8) = 0x00
-                THEN
-                    CAST(SUBSTRING(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${expressionValue}),
-                        0,
-                        LEN(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${expressionValue})) - 8)
-                    AS NVARCHAR)
-            ELSE CAST(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${expressionValue}) AS NVARCHAR)
-            END
+#sql:
+#  parameters:
+#    # Per-datasource parameters which can be used with the per-datasource expressions below
+#
+#    KardaMart_cytodos_reader:
+#      pnrPassphrase: Password1!
+#
+#  expressions:
+#    # named expressions per datasource
+#    # the ${sql:expressionName:expressionValue} StringLookup will also pass all above sql.parameters for the same named datasource as well
+#    # as the value ${expressionValue} which can be used in the below expressions (make sure these are all escaped e.g. \${expressionValue} otherwise Quarkus will try to resolve them)
+#
+#    KardaMart_cytodos_reader:
+#      decryptpersonnummer: >-
+#        CASE /* Fix for known problem where last 8 bytes of decrypted Pnr are NULL characters (0x00) and should be omitted from the value */
+#            WHEN SUBSTRING(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${expressionValue}),
+#                    LEN(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${expressionValue})) - 7,
+#                    8) = 0x00
+#                THEN
+#                    CAST(SUBSTRING(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${expressionValue}),
+#                        0,
+#                        LEN(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${expressionValue})) - 8)
+#                    AS NVARCHAR)
+#            ELSE CAST(DECRYPTBYPASSPHRASE('\${pnrPassphrase}', \${expressionValue}) AS NVARCHAR)
+#            END
 
 quarkus:
 
